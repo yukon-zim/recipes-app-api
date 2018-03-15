@@ -76,5 +76,7 @@ module.exports = {
     const id = +req.params.id;
     return res.send(recipes.find(recipe => recipe.id === id));
   }
+  //todo: find out how to connect to correct DB
+  // todo: update line 77 for mongoose
 };
 
