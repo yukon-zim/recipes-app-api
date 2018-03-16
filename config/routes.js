@@ -44,8 +44,9 @@ module.exports.routes = {
   //  ╠═╣╠═╝║  ║╣ ║║║ ║║╠═╝║ ║║║║║ ║ ╚═╗
   //  ╩ ╩╩  ╩  ╚═╝╝╚╝═╩╝╩  ╚═╝╩╝╚╝ ╩ ╚═╝
 
-'get /recipes' : 'RecipesController.index',
-  'get /recipes/:id' : 'RecipesController.getRecipe'
+'get /recipes' : 'RecipesController.getRecipes',
+  'get /recipes/:id' : 'RecipesController.getRecipe',
+  'put /recipes/:id' : 'RecipesController.updateRecipe'
 
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗
