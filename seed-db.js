@@ -1,12 +1,30 @@
+/**
+ * Seeds the local recipes collection with test data.
+ * options:
+ * --clean : removes all recipes from local collection before seeding.
+ * returns:
+ * 0 if successfully adds recipes
+ * 1 if error is thrown
+ */
 const mongoose = require('mongoose');
 const mongooseConfig = require('./config/mongoose');
 mongoose.connect(mongooseConfig.mongoose.uri);
 const recipeSchema = require('./api/models/Recipe.js');
-const Recipe = mongoose.model('Recipe', new mongoose.Schema(recipeSchema.schema));
+const mongooseAutoIncrement = require('mongoose-auto-increment');
 
-async function seedRecipes() {
+async function seedRecipes(cleanDb) {
+  const recipeMongooseSchema = new mongoose.Schema(recipeSchema.schema);
+  const Recipe = mongoose.model('Recipe', recipeMongooseSchema);
+  if (cleanDb === '--clean') {
+    await Recipe.remove({});
+    console.log('Removed all recipes from collection.');
+  } else if (cleanDb) {
+    console.log(`"${cleanDb}" is not a valid option. 
+    "--clean" option will remove all recipes from collection before seeding.`);
+  }
+  mongooseAutoIncrement.initialize(mongoose.connection);
+  recipeMongooseSchema.plugin(mongooseAutoIncrement.plugin, {model: 'Recipe', field: 'id'});
   const recipes = [{
-    id: 1,
     name: 'TEST and cheese omelet ala Bob',
     category: 'eggs',
     ingredients: [
@@ -26,11 +44,10 @@ async function seedRecipes() {
       'Immediately add cheese.',
       'Stir and flip until eggs are done as you like it'
     ],
-    dateCreated: new Date('1/28/2001'),
-    dateModified: new Date('1/6/2004'),
+    dateCreated: new Date(),
+    dateModified: new Date(),
     notes: 'This is a test of the recipe entry system.'
   }, {
-    id: 2,
     name: 'Red Beans and Rice',
     category: 'Vegetarian',
     ingredients: [
@@ -57,8 +74,8 @@ async function seedRecipes() {
       'Mash some of the beans against the side of the pan, if desired, and stir until the mixture thickens.',
       'Taste and adjust seasonings. Serve over hot rice. Pass additional Tabasco.'
     ],
-    dateCreated: new Date('1/28/2001'),
-    dateModified: new Date('1/28/2001'),
+    dateCreated: new Date(),
+    dateModified: new Date(),
     notes: 'red beans and rice, that\'s nice'
   }];
 
@@ -68,8 +85,8 @@ async function seedRecipes() {
   }
   return recipes.length;
 }
-seedRecipes().then(recipeCount => {
-  console.log(`Successfully added ${recipeCount} recipes to db`);
+seedRecipes(process.argv[2]).then(recipeCount => {
+  console.log(`Successfully added ${recipeCount} recipes to collection.`);
   process.exit(0);
 }, err => {
   console.error(err.message);

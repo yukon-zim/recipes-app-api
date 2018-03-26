@@ -50,12 +50,24 @@ module.exports = {
       foundRecipe.ingredients = req.body.ingredients;
       foundRecipe.numberOfServings = req.body.numberOfServings;
       foundRecipe.instructions = req.body.instructions;
-      foundRecipe.dateCreated = req.body.dateCreated;
-      foundRecipe.dateModified = req.body.dateModified;
+      foundRecipe.dateModified = new Date();
       foundRecipe.notes = req.body.notes;
       await foundRecipe.save();
       return res.send(foundRecipe);
     }
+  },
+  async addRecipe(req, res) {
+    const newRecipe = new Recipe();
+    newRecipe.name = req.body.name;
+    newRecipe.category = req.body.category;
+    newRecipe.ingredients = req.body.ingredients;
+    newRecipe.numberOfServings = req.body.numberOfServings;
+    newRecipe.instructions = req.body.instructions;
+    newRecipe.dateCreated = new Date();
+    newRecipe.dateModified = new Date();
+    newRecipe.notes = req.body.notes;
+    await newRecipe.save();
+    return res.send(newRecipe);
   }
 };
 
