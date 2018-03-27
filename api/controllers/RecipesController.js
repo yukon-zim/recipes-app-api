@@ -5,6 +5,7 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 const idParamValidator = {'id': 'numeric'};
+const errorHelper = require('../helpers/Error.js');
 
 module.exports = {
   async getRecipes(req, res) {
@@ -52,8 +53,13 @@ module.exports = {
       foundRecipe.instructions = req.body.instructions;
       foundRecipe.dateModified = new Date();
       foundRecipe.notes = req.body.notes;
-      await foundRecipe.save();
-      return res.send(foundRecipe);
+      try {
+        await foundRecipe.save();
+        return res.send(foundRecipe);
+      } catch(err) {
+        const returnError = errorHelper.buildErrorResponse(err);
+        return res.status(400).send(returnError);
+      }
     }
   },
   async addRecipe(req, res) {
@@ -63,11 +69,15 @@ module.exports = {
     newRecipe.ingredients = req.body.ingredients;
     newRecipe.numberOfServings = req.body.numberOfServings;
     newRecipe.instructions = req.body.instructions;
-    newRecipe.dateCreated = new Date();
-    newRecipe.dateModified = new Date();
     newRecipe.notes = req.body.notes;
-    await newRecipe.save();
-    return res.send(newRecipe);
+    try {
+      await newRecipe.save();
+      return res.send(newRecipe);
+    } catch(err) {
+      const returnError = errorHelper.buildErrorResponse(err);
+      return res.status(400).send(returnError);
+    }
   }
 };
+
 
