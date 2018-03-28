@@ -77,6 +77,31 @@ module.exports = {
       const returnError = errorHelper.buildErrorResponse(err);
       return res.status(400).send(returnError);
     }
+  },
+  async deleteRecipe(req, res) {
+    // validation
+    const paramsValidated = req.validate(
+      // if the validation fails, "req.badRequest" will be called
+      idParamValidator
+    );
+    if (!paramsValidated) {
+      return;
+    }
+    // convert ID from URL to number
+    const id = +paramsValidated.id;
+    // look up recipe
+    const foundRecipe = await Recipe.findOne({id});
+    if (!foundRecipe) {
+      res.status(404).send(`Recipe for ID ${id} not found.`);
+    } else {
+      try {
+        await foundRecipe.remove();
+        return res.send({message: `Successfully removed recipe for ID ${id}`});
+      } catch(err) {
+        const returnError = errorHelper.buildErrorResponse(err);
+        return res.status(400).send(returnError);
+      }
+    }
   }
 };
 
