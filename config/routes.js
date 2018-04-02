@@ -48,7 +48,8 @@ module.exports.routes = {
   'get /recipes/:id' : 'RecipesController.getRecipe',
   'put /recipes/:id' : 'RecipesController.updateRecipe',
   'post /recipes' : 'RecipesController.addRecipe',
-  'delete /recipes/:id' : 'RecipesController.deleteRecipe'
+  'delete /recipes/:id' : 'RecipesController.deleteRecipe',
+  'post /recipes/import' : 'RecipesController.importRecipe'
 
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗
   //  ║║║║╣ ╠╩╗╠═╣║ ║║ ║╠╩╗╚═╗
