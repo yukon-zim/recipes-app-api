@@ -4,8 +4,10 @@
  * @description :: Server-side actions for handling incoming requests.
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
+const fastCsv = require('fast-csv');
 const idParamValidator = {'id': 'numeric'};
 const errorHelper = require('../helpers/Error.js');
+const fs = require('fs');
 
 module.exports = {
   async getRecipes(req, res) {
@@ -102,6 +104,29 @@ module.exports = {
         return res.status(400).send(returnError);
       }
     }
+  },
+  async importRecipe(req, res) {
+    const readStream = req.file('importedRecipes');
+    readStream.upload((err, uploadedFiles) => {
+      const stream = fs.createReadStream(uploadedFiles[0].fd);
+      const transformStream = fastCsv()
+        .on('data', data => {
+          const newRecipe = new Recipe();
+          newRecipe.name = data[0];
+          newRecipe.category = data[1];
+          newRecipe.ingredients = data[2].split('\u001d');
+          newRecipe.numberOfServings = data[3];
+          newRecipe.instructions = data[4].split('\u000b');
+          newRecipe.dateCreated = new Date(data[5]);
+          newRecipe.dateModified = new Date();
+          newRecipe.notes = data[7];
+          newRecipe.save();
+        })
+        .on('end', () => {
+          res.send({message: 'ok'});
+        });
+      stream.pipe(transformStream);
+    });
   }
 };
 

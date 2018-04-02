@@ -7,6 +7,7 @@
   "dependencies": {
     "async": "2.0.1",
     "connect-redis": "3.2.0",
+    "fast-csv": "^2.4.1",
     "grunt": "1.0.1",
     "lodash": "3.10.1",
     "mongoose": "^5.0.10",
@@ -26,7 +27,8 @@
     "start": "NODE_ENV=dev node app.js",
     "test": "npm run lint && npm run custom-tests && echo 'Done.'",
     "lint": "node ./node_modules/eslint/bin/eslint . --max-warnings=0 --report-unused-disable-directives && echo '✔  Your code looks good.'",
-    "custom-tests": "echo \"(No other custom tests yet.)\" && echo"
+    "custom-tests": "echo \"(No other custom tests yet.)\" && echo",
+    "seed-db-clean": "node seed-db --clean"
   },
   "main": "app.js",
   "repository": {
