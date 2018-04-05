@@ -5,6 +5,18 @@ module.exports = {
     sails.mongoose.set('debug', true);
     mongooseAutoIncrement.initialize(sails.mongoose.connection);
     const newSchema = sails.mongoose.Schema(schemaDefinition);
+    newSchema.index({
+      name: 'text',
+      category: 'text',
+      ingredients: 'text',
+      notes: 'text'
+    }, {
+      weights: {
+        name: 10,
+        category: 4,
+        ingredients: 8,
+        notes: 2
+      }});
     newSchema.plugin(mongooseAutoIncrement.plugin, {model: 'Recipe', field: 'id'});
     return newSchema;
   },

@@ -11,7 +11,15 @@ const path = require('path');
 
 module.exports = {
   async getRecipes(req, res) {
-    return res.send(await Recipe.find({}));
+    let recipes;
+    const searchTerm = req.query.searchTerm;
+    const searchProjection = {score:{$meta:'textScore'}};
+    if (searchTerm) {
+      recipes = await Recipe.find({$text:{$search:searchTerm}}, searchProjection).sort(searchProjection);
+    } else {
+      recipes = await Recipe.find({});
+    }
+    return res.send(recipes);
   },
   async getRecipe(req, res) {
     // validation
@@ -137,8 +145,9 @@ module.exports = {
           newRecipe.ingredients = data[2].split('\u001d');
           newRecipe.numberOfServings = data[3];
           newRecipe.instructions = data[4].split('\u000b');
-          newRecipe.dateCreated = new Date(data[5]);
-          newRecipe.dateModified = new Date();
+          if (data[5]) {
+            newRecipe.dateCreated = new Date(data[5]);
+          }
           newRecipe.notes = data[7];
           newRecipe.save(() => {
             savedRecipeCount += 1;
