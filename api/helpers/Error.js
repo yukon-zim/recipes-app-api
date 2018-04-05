@@ -3,17 +3,28 @@ module.exports = {
 
   description: 'standardizes error response returned to the UI',
 
+  sync: true,
+
   inputs: {
     err: {
       type: 'ref',
       example: new Error(),
       description: 'the error thrown by the API/db',
-      required: true
+      required: false
+    },
+    customMessage: {
+      type: 'string',
+      example: 'No files retrieved from import request',
+      description: 'custom error message thrown in cases where err does not exist',
+      required: false
     }
   },
 
-  async fn (inputs, exits) {
-    const returnError = inputs.err;
+  fn (inputs, exits) {
+    let returnError = inputs.err;
+    if (!returnError) {
+      returnError = {message: inputs.customMessage};
+    }
     if (!returnError.message) {
       if (returnError.errmsg) {
         returnError.message = returnError.errmsg;

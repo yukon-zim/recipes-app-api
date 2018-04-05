@@ -6,8 +6,8 @@
  */
 const fastCsv = require('fast-csv');
 const idParamValidator = {'id': 'numeric'};
-const errorHelper = require('../helpers/Error.js');
 const fs = require('fs');
+const path = require('path');
 
 module.exports = {
   async getRecipes(req, res) {
@@ -59,7 +59,7 @@ module.exports = {
         await foundRecipe.save();
         return res.send(foundRecipe);
       } catch(err) {
-        const returnError = errorHelper.buildErrorResponse(err);
+        const returnError = sails.helpers.error(err);
         return res.status(400).send(returnError);
       }
     }
@@ -76,7 +76,7 @@ module.exports = {
       await newRecipe.save();
       return res.send(newRecipe);
     } catch(err) {
-      const returnError = errorHelper.buildErrorResponse(err);
+      const returnError = sails.helpers.error(err);
       return res.status(400).send(returnError);
     }
   },
@@ -100,16 +100,36 @@ module.exports = {
         await foundRecipe.remove();
         return res.send({message: `Successfully removed recipe for ID ${id}`});
       } catch(err) {
-        const returnError = errorHelper.buildErrorResponse(err);
+        const returnError = sails.helpers.error(err);
         return res.status(400).send(returnError);
       }
     }
   },
   async importRecipe(req, res) {
     const readStream = req.file('importedRecipes');
-    readStream.upload((err, uploadedFiles) => {
-      const stream = fs.createReadStream(uploadedFiles[0].fd);
+    readStream.upload(async (err, uploadedFiles) => {
+      if (err) {
+        const returnError = sails.helpers.error(err, null);
+        return res.status(400).send(returnError);
+      }
+      if (uploadedFiles.length === 0) {
+        const returnError = sails.helpers.error(null, 'No files retrieved from import request');
+        return res.status(400).send(returnError);
+      }
+      const filePath = uploadedFiles[0].fd;
+      const fileExtension = (path.extname(filePath)).toLowerCase();
+      if (fileExtension !== '.csv') {
+        const returnError = sails.helpers.error(null, 'File must be a CSV');
+        return res.status(400).send(returnError);
+      }
+      const stream = fs.createReadStream(filePath);
+      let savedRecipeCount = 0;
+      let totalRecipeCount = 0;
       const transformStream = fastCsv()
+        .validate(data => {
+          totalRecipeCount += 1;
+          return true;
+        })
         .on('data', data => {
           const newRecipe = new Recipe();
           newRecipe.name = data[0];
@@ -120,10 +140,16 @@ module.exports = {
           newRecipe.dateCreated = new Date(data[5]);
           newRecipe.dateModified = new Date();
           newRecipe.notes = data[7];
-          newRecipe.save();
+          newRecipe.save(() => {
+            savedRecipeCount += 1;
+            if (savedRecipeCount === totalRecipeCount) {
+              res.send({message: `imported ${savedRecipeCount} recipes`});
+            }
+          });
         })
-        .on('end', () => {
-          res.send({message: 'ok'});
+        .on('error', err => {
+          const returnError = sails.helpers.error(null, 'Encountered an error when importing recipes');
+          return res.status(400).send(returnError);
         });
       stream.pipe(transformStream);
     });
