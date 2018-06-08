@@ -8,6 +8,14 @@ const fastCsv = require('fast-csv');
 const idParamValidator = {'id': 'numeric'};
 const fs = require('fs');
 const path = require('path');
+const request = require('request-promise');
+const cheerio = require('cheerio');
+const WebRecipeImporterFactory = require('../classes/WebRecipeImporterFactory.js');
+const requestOptions = {
+  transform(body) {
+    return cheerio.load(body);
+  }
+};
 
 module.exports = {
   async getRecipes(req, res) {
@@ -86,6 +94,20 @@ module.exports = {
     } catch(err) {
       const returnError = sails.helpers.error(err);
       return res.status(400).send(returnError);
+    }
+  },
+  async addRecipeFromUrl(req, res) {
+    let newRecipe = new Recipe();
+    requestOptions.uri = req.body.url;
+    const selector = await request(requestOptions);
+    const webRecipeImporter = WebRecipeImporterFactory.getWebRecipeImporter(requestOptions.uri, selector);
+    try {
+      newRecipe = webRecipeImporter.buildNewRecipe(newRecipe, requestOptions.uri);
+      await newRecipe.save();
+      return res.send(newRecipe);
+    } catch(err) {
+      const returnError = sails.helpers.error(err);
+      return res.status(400).send(returnError.message);
     }
   },
   async deleteRecipe(req, res) {
