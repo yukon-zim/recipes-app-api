@@ -36,12 +36,12 @@ module.exports = {
       this.setNameProperty();
       console.log(this.name);
       if (this.name.length < 1) {
-        throw new Error(`no recipe name found for selector ${selectorString}`);
+        throw new Error(`no recipe name found for this selector`);
       }
     }
     setCategory() {
       this.setCategoryProperty();
-      console.log(this.category);
+      console.log(`category ${this.category}`);
       // no error handling necessary for optional category property
     }
     setNumberOfServings() {
@@ -51,16 +51,16 @@ module.exports = {
     }
     setIngredients() {
       this.setIngredientsProperty();
-      console.log(this.ingredients);
+      console.log(`ingredients: ${this.ingredients}`);
       if (this.ingredients.length < 1) {
-        throw new Error(`no ingredients found for selector ${selectorString}`);
+        throw new Error(`no ingredients found for this selector`);
       }
     }
     setInstructions() {
       this.setInstructionsProperty();
-      console.log(this.instructions);
+      console.log(`instructions: ${this.instructions}`);
       if (this.instructions.length < 1) {
-        throw new Error(`no instructions found for selector ${selectorString}`);
+        throw new Error(`no instructions found for this selector`);
       }
     }
     setNotes() {
