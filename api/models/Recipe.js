@@ -1,65 +1,89 @@
-const mongooseAutoIncrement = require('mongoose-auto-increment');
+const lodash = require('lodash');
 
 module.exports = {
-  constructSchema(schemaDefinition, sails) {
-    sails.mongoose.set('debug', true);
-    mongooseAutoIncrement.initialize(sails.mongoose.connection);
-    const newSchema = sails.mongoose.Schema(schemaDefinition);
-    newSchema.index({
-      name: 'text',
-      category: 'text',
-      ingredients: 'text',
-      notes: 'text'
-    }, {
-      weights: {
-        name: 10,
-        category: 4,
-        ingredients: 8,
-        notes: 2
-      }});
-    newSchema.plugin(mongooseAutoIncrement.plugin, {model: 'Recipe', field: 'id'});
-    return newSchema;
-  },
-  schema: {
+  attributes: {
     id: {
-      type: Number,
+      columnName: 'recipe_id',
+      type: 'Number',
       unique: true,
-      required: true
+      autoIncrement: true
     },
     name: {
-      type: String,
+      type: 'String',
       unique: true,
       required: true
     },
     category: {
-      type: String,
-      default:''
+      type: 'String',
+      defaultsTo: ''
     },
     ingredients: {
-      type: [String],
-      required: true
+      collection: 'ingredient',
+      via: 'recipeId'
     },
     numberOfServings: {
-      type: String,
-      default:''
+      columnName: 'number_of_servings',
+      type: 'String',
+      defaultsTo: ''
     },
     instructions: {
-      type: [String],
-      required: true
+      collection: 'instruction',
+      via: 'recipeId'
     },
     dateCreated: {
-      type: Date,
-      required: true,
-      default: new Date()
+      columnName: 'date_created',
+      type: 'ref',
+      columnType: 'Date',
+      defaultsTo: new Date()
     },
     dateModified: {
-      type: Date,
-      required: true,
-      default: new Date()
+      columnName: 'date_modified',
+      type: 'ref',
+      columnType: 'Date',
+      defaultsTo: new Date()
     },
     notes: {
-      type: String,
-      default:''
+      type: 'String',
+      defaultsTo: ''
     },
+  },
+  cascadeOnDestroy: true,
+  customToJSON() {
+    const newRecipe = lodash.omit(this, ['ingredients', 'instructions']);
+    const ingredientNames = this.ingredients.map(ingredient => {
+      return ingredient.name;
+    });
+    const instructionNames = this.instructions.map(instruction => {
+      return instruction.name;
+    });
+    newRecipe.ingredients = ingredientNames;
+    newRecipe.instructions = instructionNames;
+    return newRecipe;
+  },
+  async getFullRecipe(recipeId) {
+    return await Recipe.findOne({id: recipeId})
+      .populate('ingredients', {sort: 'ingredientIndex'})
+      .populate('instructions', {sort: 'instructionIndex'});
+  },
+  async createNewRecipe(recipeData) {
+    const flatRecipeData = lodash.omit(this, ['ingredients', 'instructions']);
+    const newRecipe = await Recipe.create(flatRecipeData).fetch();
+    const dbIngredients = recipeData.ingredients.map((ingredient, index) => {
+      return {
+        name: ingredient,
+        ingredientIndex: index,
+        recipeId: newRecipe.id
+      };
+    });
+    await Ingredient.createEach(dbIngredients);
+    const dbInstructions = recipeData.instructions.map((instruction, index) => {
+      return {
+        name: instruction,
+        instructionIndex: index,
+        recipeId: newRecipe.id
+      };
+    });
+    await Instruction.createEach(dbInstructions);
+    return await Recipe.getFullRecipe(newRecipe.id);
   }
 };
