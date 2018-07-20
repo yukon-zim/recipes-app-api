@@ -49,7 +49,7 @@ module.exports.datastores = {
     *                                                                          *
     ***************************************************************************/
     adapter: 'sails-mysql',
-    url: `mysql://${process.env.recipes_app_db_user}:${process.env.recipes_app_db_pw}@${process.env.recipes_app_db_host}`,
+    url: 'mysql://yukonsolns-mac:yukonsolns-mac@localhost:3306/recipes_app',
 
   },
 

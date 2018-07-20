@@ -8,11 +8,9 @@
     "async": "2.0.1",
     "cheerio": "^1.0.0-rc.2",
     "connect-redis": "3.2.0",
-    "email-validator": "^2.0.4",
     "fast-csv": "^2.4.1",
     "grunt": "1.0.1",
     "lodash": "3.10.1",
-    "random-id": "^1.0.3",
     "request": "^2.87.0",
     "request-promise": "^4.2.2",
     "sails": "^1.0.0-46",
@@ -24,16 +22,13 @@
     "socket.io-redis": "5.2.0"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
-    "eslint": "4.11.0",
-    "mocha": "^5.2.0",
-    "supertest": "^3.1.0"
+    "eslint": "4.11.0"
   },
   "scripts": {
-    "start": "NODE_ENV=dev node app.js --drop",
+    "start": "NODE_ENV=dev node app.js",
     "test": "npm run lint && npm run custom-tests && echo 'Done.'",
     "lint": "node ./node_modules/eslint/bin/eslint . --max-warnings=0 --report-unused-disable-directives && echo '✔  Your code looks good.'",
-    "custom-tests": "node ./node_modules/mocha/bin/mocha test/lifecycle.test.js test/**/*.test.js",
+    "custom-tests": "echo \"(No other custom tests yet.)\" && echo",
     "seed-db-clean": "node seed-db --clean"
   },
   "main": "app.js",

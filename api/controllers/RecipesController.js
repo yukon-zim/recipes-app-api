@@ -1,10 +1,11 @@
 /**
  * RecipesController
  *
- * @description :: Server-side actions for handling incoming recipe requests.
+ * @description :: Server-side actions for handling incoming requests.
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 const fastCsv = require('fast-csv');
+const idParamValidator = {'id': 'numeric'};
 const fs = require('fs');
 const path = require('path');
 const request = require('request-promise');
@@ -18,46 +19,61 @@ const requestOptions = {
 
 module.exports = {
   async getRecipes(req, res) {
-    let recipes = [];
+    let recipes;
     const searchTerm = req.query.searchTerm;
+    const searchProjection = {score:{$meta:'textScore'}};
     if (searchTerm) {
-      recipes = await Recipe.searchRecipes(searchTerm);
+      recipes = await Recipe.find({$text:{$search:searchTerm}}, searchProjection).sort(searchProjection);
     } else {
-      recipes = await Recipe.getFullRecipes({});
+      recipes = await Recipe.find({});
     }
     return res.send(recipes);
   },
   async getRecipe(req, res) {
     // validation
-    const id = sails.helpers.idValidator(req);
+    const paramsValidated = req.validate(
+      // if the validation fails, "req.badRequest" will be called
+      idParamValidator
+    );
+    if (!paramsValidated) {
+      return;
+    }
+    // convert ID from URL to number
+    const id = +paramsValidated.id;
     // look up recipe
     const foundRecipe = await Recipe.getFullRecipe(id);
     if (!foundRecipe) {
-      const returnError = sails.helpers.error(null, `Recipe for ID ${id} not found.`);
-      return res.status(404).send(returnError);
+      res.status(404).send(`Recipe for ID ${id} not found.`);
     } else {
       return res.send(foundRecipe);
     }
   },
   async updateRecipe(req, res) {
     // validation
-    const id = sails.helpers.idValidator(req);
+    const paramsValidated = req.validate(
+      // if the validation fails, "req.badRequest" will be called
+      idParamValidator
+    );
+    if (!paramsValidated) {
+      return;
+    }
+    // convert ID from URL to number
+    const id = +paramsValidated.id;
     // look up recipe
     const foundRecipe = await Recipe.findOne({id});
     if (!foundRecipe) {
-      const returnError = sails.helpers.error(null, `Recipe for ID ${id} not found.`);
-      res.status(404).send(returnError);
+      res.status(404).send(`Recipe for ID ${id} not found.`);
     } else {
-      const updatedRecipeData = {
-        name: req.body.name,
-        category: req.body.category,
-        ingredients: req.body.ingredients,
-        instructions: req.body.instructions,
-        numberOfServings: req.body.numberOfServings,
-        notes: req.body.notes
-      };
+      foundRecipe.name = req.body.name;
+      foundRecipe.category = req.body.category;
+      await Recipe.replaceCollection(id, 'ingredients', req.body.ingredients);
+      foundRecipe.numberOfServings = req.body.numberOfServings;
+      await Recipe.replaceCollection(id, 'instructions', req.body.instructions);
+      foundRecipe.dateModified = new Date();
+      foundRecipe.notes = req.body.notes;
       try {
-        const updatedRecipe = await Recipe.updateRecipe(updatedRecipeData, id);
+        await foundRecipe.update();
+        const updatedRecipe = await Recipe.getFullRecipe(id);
         return res.send(updatedRecipe);
       } catch(err) {
         const returnError = sails.helpers.error(err);
@@ -83,19 +99,14 @@ module.exports = {
     }
   },
   async addRecipeFromUrl(req, res) {
-    let newRecipe = {};
+    let newRecipe = new Recipe();
     requestOptions.uri = req.body.url;
-    if (!requestOptions.uri) {
-      const returnError = sails.helpers.error(null, `Import URI required`);
-      res.status(404).send(returnError);
-      return;
-    }
     const selector = await request(requestOptions);
     const webRecipeImporter = WebRecipeImporterFactory.getWebRecipeImporter(requestOptions.uri, selector);
     try {
       newRecipe = webRecipeImporter.buildNewRecipe(newRecipe, requestOptions.uri);
-      const importedRecipe = await Recipe.createNewRecipe(newRecipe);
-      return res.send(importedRecipe);
+      await newRecipe.save();
+      return res.send(newRecipe);
     } catch(err) {
       const returnError = sails.helpers.error(err);
       return res.status(400).send(returnError.message);
@@ -103,15 +114,22 @@ module.exports = {
   },
   async deleteRecipe(req, res) {
     // validation
-    const id = sails.helpers.idValidator(req);
+    const paramsValidated = req.validate(
+      // if the validation fails, "req.badRequest" will be called
+      idParamValidator
+    );
+    if (!paramsValidated) {
+      return;
+    }
+    // convert ID from URL to number
+    const id = +paramsValidated.id;
     // look up recipe
     const foundRecipe = await Recipe.findOne({id});
     if (!foundRecipe) {
-      const returnError = sails.helpers.error(null, `Recipe for ID ${id} not found.`);
-      res.status(404).send(returnError);
+      res.status(404).send(`Recipe for ID ${id} not found.`);
     } else {
       try {
-        await Recipe.deleteRecipe(id);
+        await Recipe.destroy({id}).meta({cascade: true});
         return res.send({message: `Successfully removed recipe for ID ${id}`});
       } catch(err) {
         const returnError = sails.helpers.error(err);
@@ -138,49 +156,31 @@ module.exports = {
       }
       const stream = fs.createReadStream(filePath);
       let savedRecipeCount = 0;
-      let erroredRecipeCount = 0;
       let totalRecipeCount = 0;
       const transformStream = fastCsv()
-        .validate(() => {
+        .validate(data => {
           totalRecipeCount += 1;
           return true;
         })
         .on('data', data => {
-          function sendResponseIfLastRecord(res) {
-            if ((savedRecipeCount + erroredRecipeCount) === totalRecipeCount) {
-              res.send({message: `imported ${savedRecipeCount} recipes, encountered ${erroredRecipeCount} errors`});
+          const newRecipe = new Recipe();
+          newRecipe.name = data[0];
+          newRecipe.category = data[1];
+          newRecipe.ingredients = data[2].split('\u001d');
+          newRecipe.numberOfServings = data[3];
+          newRecipe.instructions = data[4].split('\u000b');
+          if (data[5]) {
+            newRecipe.dateCreated = new Date(data[5]);
+          }
+          newRecipe.notes = data[7];
+          newRecipe.save(() => {
+            savedRecipeCount += 1;
+            if (savedRecipeCount === totalRecipeCount) {
+              res.send({message: `imported ${savedRecipeCount} recipes`});
             }
-          }
-          try {
-            const newRecipeObj = {
-              name: data[0],
-              category: data[1],
-              ingredients: data[2].split('\u001d'),
-              numberOfServings: data[3],
-              instructions: data[4].split('\u000b'),
-              notes: data[7]
-            };
-            // if (data[5]) {
-            //   newRecipe.dateCreated = new Date(data[5]);
-            // }
-
-            const importedRecipe = Recipe.createNewRecipe(newRecipeObj);
-            importedRecipe.then(() => {
-              savedRecipeCount += 1;
-              sendResponseIfLastRecord(res);
-            }).catch(err => {
-              erroredRecipeCount += 1;
-              sendResponseIfLastRecord(res);
-              console.error(err);
-
-            });
-          } catch (err) {
-            erroredRecipeCount += 1;
-            sendResponseIfLastRecord(res);
-            console.error(err);
-          }
+          });
         })
-        .on('error', () => {
+        .on('error', err => {
           const returnError = sails.helpers.error(null, 'Encountered an error when importing recipes');
           return res.status(400).send(returnError);
         });
