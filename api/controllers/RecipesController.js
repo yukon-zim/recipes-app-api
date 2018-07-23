@@ -19,13 +19,12 @@ const requestOptions = {
 
 module.exports = {
   async getRecipes(req, res) {
-    let recipes;
+    let recipes = [];
     const searchTerm = req.query.searchTerm;
-    const searchProjection = {score:{$meta:'textScore'}};
     if (searchTerm) {
-      recipes = await Recipe.find({$text:{$search:searchTerm}}, searchProjection).sort(searchProjection);
+      recipes = await Recipe.searchRecipes(searchTerm);
     } else {
-      recipes = await Recipe.find({});
+      recipes = await Recipe.getFullRecipes({});
     }
     return res.send(recipes);
   },
@@ -99,14 +98,14 @@ module.exports = {
     }
   },
   async addRecipeFromUrl(req, res) {
-    let newRecipe = new Recipe();
+    let newRecipe = {};
     requestOptions.uri = req.body.url;
     const selector = await request(requestOptions);
     const webRecipeImporter = WebRecipeImporterFactory.getWebRecipeImporter(requestOptions.uri, selector);
     try {
       newRecipe = webRecipeImporter.buildNewRecipe(newRecipe, requestOptions.uri);
-      await newRecipe.save();
-      return res.send(newRecipe);
+      const importedRecipe = await Recipe.createNewRecipe(newRecipe);
+      return res.send(importedRecipe);
     } catch(err) {
       const returnError = sails.helpers.error(err);
       return res.status(400).send(returnError.message);

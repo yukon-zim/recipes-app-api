@@ -44,6 +44,7 @@ module.exports = {
     },
     notes: {
       type: 'String',
+      columnType: 'varchar(1100)',
       defaultsTo: ''
     },
   },
@@ -64,6 +65,35 @@ module.exports = {
     return await Recipe.findOne({id: recipeId})
       .populate('ingredients', {sort: 'ingredientIndex'})
       .populate('instructions', {sort: 'instructionIndex'});
+  },
+  async getFullRecipes(criteriaObj) {
+    return await Recipe.find(criteriaObj)
+      .populate('ingredients', {sort: 'ingredientIndex'})
+      .populate('instructions', {sort: 'instructionIndex'});
+  },
+  async searchRecipes(searchString) {
+    const wildCardSearch = `%${searchString}%`;
+    const searchResults = await Recipe.getDatastore().sendNativeQuery(
+      'SELECT DISTINCT recipe.recipe_id ' +
+      'FROM recipes_app.recipe AS recipe ' +
+      'INNER JOIN recipes_app.ingredient AS ingredient ' +
+      'ON recipe.recipe_id = ingredient.recipe_id ' +
+      'INNER JOIN recipes_app.instruction AS instruction ' +
+      'ON recipe.recipe_id = instruction.recipe_id ' +
+      'WHERE recipes_app.recipe.name LIKE $1 ' +
+      'OR recipe.category LIKE $1 ' +
+      'OR recipe.number_of_servings LIKE $1 ' +
+      'OR recipe.date_created LIKE $1 ' +
+      'OR recipe.date_modified LIKE $1 ' +
+      'OR recipe.notes LIKE $1 ' +
+      'OR ingredient.ingredient_name LIKE $1 ' +
+      'OR instruction.instruction_name LIKE $1; ',
+      [wildCardSearch]);
+    console.log(searchResults);
+    const recipeIds = searchResults.rows.map(row => {
+      return row.recipe_id;
+    });
+    return await Recipe.getFullRecipes({id: {in: recipeIds}});
   },
   async createNewRecipe(recipeData) {
     const flatRecipeData = lodash.omit(recipeData, ['ingredients', 'instructions']);
