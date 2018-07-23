@@ -129,7 +129,7 @@ module.exports = {
       res.status(404).send(`Recipe for ID ${id} not found.`);
     } else {
       try {
-        await Recipe.destroy({id}).meta({cascade: true});
+        await Recipe.deleteRecipe(id);
         return res.send({message: `Successfully removed recipe for ID ${id}`});
       } catch(err) {
         const returnError = sails.helpers.error(err);

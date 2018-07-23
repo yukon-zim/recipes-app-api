@@ -66,7 +66,7 @@ module.exports = {
       .populate('instructions', {sort: 'instructionIndex'});
   },
   async createNewRecipe(recipeData) {
-    const flatRecipeData = lodash.omit(this, ['ingredients', 'instructions']);
+    const flatRecipeData = lodash.omit(recipeData, ['ingredients', 'instructions']);
     const newRecipe = await Recipe.create(flatRecipeData).fetch();
     const dbIngredients = recipeData.ingredients.map((ingredient, index) => {
       return {
@@ -85,5 +85,10 @@ module.exports = {
     });
     await Instruction.createEach(dbInstructions);
     return await Recipe.getFullRecipe(newRecipe.id);
+  },
+  async deleteRecipe(recipeId) {
+    await Ingredient.destroy({recipeId});
+    await Instruction.destroy({recipeId});
+    await Recipe.destroy({id: recipeId});
   }
 };
