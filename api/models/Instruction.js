@@ -9,7 +9,8 @@ module.exports = {
     name: {
       columnName: 'instruction_name',
       type: 'String',
-      required: true
+      required: true,
+      columnType: 'varchar(1500)'
     },
     instructionIndex: {
       columnName: 'instruction_index',
