@@ -11,7 +11,14 @@ module.exports = {
     name: {
       type: 'String',
       unique: true,
-      required: true
+      required: true,
+      // disallow strings only of spaces to maintain UI access to recipe
+      custom: function(name) {
+        if (name.trim().length === 0) {
+          return false;
+        }
+        return true;
+      }
     },
     category: {
       type: 'String',

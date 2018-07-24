@@ -155,6 +155,7 @@ module.exports = {
       }
       const stream = fs.createReadStream(filePath);
       let savedRecipeCount = 0;
+      let erroredRecipeCount = 0;
       let totalRecipeCount = 0;
       const transformStream = fastCsv()
         .validate(data => {
@@ -173,12 +174,20 @@ module.exports = {
           // if (data[5]) {
           //   newRecipe.dateCreated = new Date(data[5]);
           // }
+          function sendResponseIfLastRecord(res) {
+            if ((savedRecipeCount + erroredRecipeCount) === totalRecipeCount) {
+              res.send({message: `imported ${savedRecipeCount} recipes,\\n encountered ${erroredRecipeCount} errors`});
+            }
+          }
           const importedRecipe = Recipe.createNewRecipe(newRecipeObj);
           importedRecipe.then(() => {
             savedRecipeCount += 1;
-            if (savedRecipeCount === totalRecipeCount) {
-              res.send({message: `imported ${savedRecipeCount} recipes`});
-            }
+            sendResponseIfLastRecord(res);
+          }).catch(err => {
+            erroredRecipeCount += 1;
+            sendResponseIfLastRecord(res);
+            console.error(err);
+
           });
         })
         .on('error', err => {
