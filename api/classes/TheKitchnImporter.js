@@ -32,7 +32,7 @@ module.exports = {
       }).get();
     }
     setNotesProperty() {
-      const selectorString = "h3:contains('Recipe Notes')";
+      const selectorString = `h3:contains('Recipe Notes')`;
       this.notes = this.selector(selectorString).nextAll().text();
     }
   }

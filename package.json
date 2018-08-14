@@ -22,13 +22,15 @@
     "socket.io-redis": "5.2.0"
   },
   "devDependencies": {
-    "eslint": "4.11.0"
+    "chai": "^4.1.2",
+    "eslint": "4.11.0",
+    "mocha": "^5.2.0"
   },
   "scripts": {
     "start": "NODE_ENV=dev node app.js --drop",
     "test": "npm run lint && npm run custom-tests && echo 'Done.'",
     "lint": "node ./node_modules/eslint/bin/eslint . --max-warnings=0 --report-unused-disable-directives && echo '✔  Your code looks good.'",
-    "custom-tests": "echo \"(No other custom tests yet.)\" && echo",
+    "custom-tests": "node ./node_modules/mocha/bin/mocha test/lifecycle.test.js test/**/*.test.js",
     "seed-db-clean": "node seed-db --clean"
   },
   "main": "app.js",
