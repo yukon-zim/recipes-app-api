@@ -26,6 +26,7 @@ module.exports = {
       returnError = {message: inputs.customMessage};
     }
     if (!returnError.message) {
+      returnError = Object.assign({}, inputs.err);
       if (returnError.errmsg) {
         returnError.message = returnError.errmsg;
       } else {

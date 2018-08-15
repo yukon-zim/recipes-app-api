@@ -12,16 +12,38 @@ before(function(done) {
 
     // For example, we might want to skip the Grunt hook,
     // and disable all logs except errors and warnings:
-    hooks: { grunt: false },
-    log: { level: 'warn' },
+    // hooks: { grunt: false },
+    // log: { level: 'warn' },
+    models: { migrate: 'drop' }
 
   }, err => {
     if (err) { return done(err); }
+    const newRecipe = {
+      name: 'test name',
+      category: 'test category',
+      numberOfServings: 'test servings',
+      ingredients: ['test ingredients'],
+      instructions: ['test instructions'],
+      notes: 'test notes'
+    };
+    const newRecipe2 = {
+      name: 'name',
+      category: 'category',
+      numberOfServings: 'servings',
+      ingredients: ['ingredients'],
+      instructions: ['instructions'],
+      notes: 'notes'
+    };
+    Recipe.createNewRecipe(newRecipe).then(() => {
+      Recipe.createNewRecipe(newRecipe2).then(() => {
+        return done();
+      });
+    });
 
     // here you can load fixtures, etc.
     // (for example, you might want to create some records in the database)
 
-    return done();
+    // return done();
   });
 });
 
