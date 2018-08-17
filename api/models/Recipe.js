@@ -82,12 +82,12 @@ module.exports = {
     const wildCardSearch = `%${searchString}%`;
     const searchResults = await Recipe.getDatastore().sendNativeQuery(
       'SELECT DISTINCT recipe.recipe_id ' +
-      'FROM recipes_app.recipe AS recipe ' +
-      'INNER JOIN recipes_app.ingredient AS ingredient ' +
+      'FROM recipe AS recipe ' +
+      'INNER JOIN ingredient AS ingredient ' +
       'ON recipe.recipe_id = ingredient.recipe_id ' +
-      'INNER JOIN recipes_app.instruction AS instruction ' +
+      'INNER JOIN instruction AS instruction ' +
       'ON recipe.recipe_id = instruction.recipe_id ' +
-      'WHERE recipes_app.recipe.name LIKE $1 ' +
+      'WHERE recipe.name LIKE $1 ' +
       'OR recipe.category LIKE $1 ' +
       'OR recipe.number_of_servings LIKE $1 ' +
       'OR recipe.date_created LIKE $1 ' +

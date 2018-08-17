@@ -1,4 +1,5 @@
-var sails = require('sails');
+const sails = require('sails');
+const fixtures = require('./data/fixtures.js');
 
 // Before running any tests...
 before(function(done) {
@@ -18,27 +19,11 @@ before(function(done) {
 
   }, err => {
     if (err) { return done(err); }
-    const newRecipe = {
-      name: 'test name',
-      category: 'test category',
-      numberOfServings: 'test servings',
-      ingredients: ['test ingredients'],
-      instructions: ['test instructions'],
-      notes: 'test notes'
-    };
-    const newRecipe2 = {
-      name: 'name',
-      category: 'category',
-      numberOfServings: 'servings',
-      ingredients: ['ingredients'],
-      instructions: ['instructions'],
-      notes: 'notes'
-    };
-    Recipe.createNewRecipe(newRecipe).then(() => {
-      Recipe.createNewRecipe(newRecipe2).then(() => {
-        return done();
+    // reset fixture data before each test run
+    fixtures.resetFixtureData()
+      .then(() => {
+        done();
       });
-    });
 
     // here you can load fixtures, etc.
     // (for example, you might want to create some records in the database)
