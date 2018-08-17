@@ -123,6 +123,30 @@ module.exports = {
     await Instruction.createEach(dbInstructions);
     return await Recipe.getFullRecipe(newRecipe.id);
   },
+  async updateRecipe(recipeData, recipeId) {
+    const flatRecipeData = lodash.omit(recipeData, ['ingredients', 'instructions']);
+    await Ingredient.destroy({recipeId});
+    await Instruction.destroy({recipeId});
+    const dbIngredients = recipeData.ingredients.map((ingredient, index) => {
+      return {
+        name: ingredient,
+        ingredientIndex: index,
+        recipeId: recipeId
+      };
+    });
+    await Ingredient.createEach(dbIngredients);
+    const dbInstructions = recipeData.instructions.map((instruction, index) => {
+      return {
+        name: instruction,
+        instructionIndex: index,
+        recipeId: recipeId
+      };
+    });
+    await Instruction.createEach(dbInstructions);
+    await Recipe.update({id: recipeId})
+      .set(flatRecipeData);
+    return await Recipe.getFullRecipe(recipeId);
+  },
   async deleteRecipe(recipeId) {
     await Ingredient.destroy({recipeId});
     await Instruction.destroy({recipeId});
