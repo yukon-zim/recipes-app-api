@@ -163,32 +163,39 @@ module.exports = {
           return true;
         })
         .on('data', data => {
-          const newRecipeObj = {
-            name: data[0],
-            category: data[1],
-            ingredients: data[2].split('\u001d'),
-            numberOfServings: data[3],
-            instructions: data[4].split('\u000b'),
-            notes: data[7]
-          };
-          // if (data[5]) {
-          //   newRecipe.dateCreated = new Date(data[5]);
-          // }
           function sendResponseIfLastRecord(res) {
             if ((savedRecipeCount + erroredRecipeCount) === totalRecipeCount) {
               res.send({message: `imported ${savedRecipeCount} recipes,\\n encountered ${erroredRecipeCount} errors`});
             }
           }
-          const importedRecipe = Recipe.createNewRecipe(newRecipeObj);
-          importedRecipe.then(() => {
-            savedRecipeCount += 1;
-            sendResponseIfLastRecord(res);
-          }).catch(err => {
+          try {
+            const newRecipeObj = {
+              name: data[0],
+              category: data[1],
+              ingredients: data[2].split('\u001d'),
+              numberOfServings: data[3],
+              instructions: data[4].split('\u000b'),
+              notes: data[7]
+            };
+            // if (data[5]) {
+            //   newRecipe.dateCreated = new Date(data[5]);
+            // }
+
+            const importedRecipe = Recipe.createNewRecipe(newRecipeObj);
+            importedRecipe.then(() => {
+              savedRecipeCount += 1;
+              sendResponseIfLastRecord(res);
+            }).catch(err => {
+              erroredRecipeCount += 1;
+              sendResponseIfLastRecord(res);
+              console.error(err);
+
+            });
+          } catch (err) {
             erroredRecipeCount += 1;
             sendResponseIfLastRecord(res);
             console.error(err);
-
-          });
+          }
         })
         .on('error', () => {
           const returnError = sails.helpers.error(null, 'Encountered an error when importing recipes');

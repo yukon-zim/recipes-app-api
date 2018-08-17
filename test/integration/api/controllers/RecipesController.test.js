@@ -176,4 +176,47 @@ describe('RecipesController', () => {
       expect(res.body).to.have.property('message').that.equals(`Successfully removed recipe for ID ${validRecipeId}`);
     });
   });
+  describe('importRecipe()', () => {
+    it('should throw an error if file is not a .csv', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .post('/recipes/import')
+        .attach('importedRecipes', `${__dirname}/../../../data/csv-upload/non-csv.txt`)
+        .expect(400);
+      expect(res.body).to.have.property('message').that.equals(`File must be a CSV`);
+    });
+    it('should throw an error if no file is supplied', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .post('/recipes/import')
+        .expect(400);
+      expect(res.body).to.have.property('message').that.equals(`No files retrieved from import request`);
+    });
+    it('should throw an error when a malformed .csv is uploaded', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .post('/recipes/import')
+        .attach('importedRecipes', `${__dirname}/../../../data/csv-upload/malformed.csv`)
+        .expect(200);
+      console.log('body');
+      console.log(res.body);
+      expect(res.body).to.have.property('message').that.equals(`imported 5 recipes,\\n encountered 1 errors`);
+    });
+    it('should correctly count and create valid records in upload', async () => {
+      const res = await supertest(sails.hooks.http.app)
+        .post('/recipes/import')
+        .attach('importedRecipes', `${__dirname}/../../../data/csv-upload/5-valid-records.csv`)
+        .expect(200);
+      const numValidRecords = await Recipe.count({name: {contains: 'csv-upload-test'}});
+      expect(res.body).to.have.property('message').that.equals(`imported 5 recipes,\\n encountered 0 errors`);
+      expect(numValidRecords).to.equal(5);
+    });
+    it('should correctly count and report invalid records in upload', async () => {
+      const numInitialRecords = await Recipe.count({});
+      const res = await supertest(sails.hooks.http.app)
+        .post('/recipes/import')
+        .attach('importedRecipes', `${__dirname}/../../../data/csv-upload/5-invalid-records.csv`)
+        .expect(200);
+      const numValidRecords = await Recipe.count({});
+      expect(res.body).to.have.property('message').that.equals(`imported 0 recipes,\\n encountered 5 errors`);
+      expect(numValidRecords).to.equal(numInitialRecords);
+    });
+  });
 });
