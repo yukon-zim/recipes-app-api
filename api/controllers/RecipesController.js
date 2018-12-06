@@ -60,6 +60,7 @@ module.exports = {
     const id = +paramsValidated.id;
     // look up recipe
     const foundRecipe = await Recipe.findOne({id});
+    console.log(foundRecipe);
     if (!foundRecipe) {
       res.status(404).send(`Recipe for ID ${id} not found.`);
     } else {
@@ -71,6 +72,7 @@ module.exports = {
         numberOfServings: req.body.numberOfServings,
         notes: req.body.notes
       };
+      console.log(updatedRecipeData);
       try {
         const updatedRecipe = await Recipe.updateRecipe(updatedRecipeData, id);
         return res.send(updatedRecipe);
