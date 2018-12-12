@@ -51,6 +51,9 @@ module.exports.routes = {
   'post /recipes/import' : 'RecipesController.importRecipe',
   'post /recipes/import-url' : 'RecipesController.addRecipeFromUrl',
   'delete /recipes/:id' : 'RecipesController.deleteRecipe',
+  'get /users' : 'UsersController.getUsers',
+  'get /users/:id' : 'UsersController.getUser',
+  'post /users' : 'UsersController.createNewUser'
 
 
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗

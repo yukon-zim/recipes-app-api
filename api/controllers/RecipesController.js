@@ -1,15 +1,15 @@
 /**
  * RecipesController
  *
- * @description :: Server-side actions for handling incoming requests.
+ * @description :: Server-side actions for handling incoming recipe requests.
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 const fastCsv = require('fast-csv');
-const idParamValidator = {'id': 'numeric'};
 const fs = require('fs');
 const path = require('path');
 const request = require('request-promise');
 const cheerio = require('cheerio');
+const idParamValidator = {'id': 'numeric'};
 const WebRecipeImporterFactory = require('../classes/WebRecipeImporterFactory.js');
 const requestOptions = {
   transform(body) {
