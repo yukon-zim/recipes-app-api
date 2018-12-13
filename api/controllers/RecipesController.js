@@ -42,7 +42,8 @@ module.exports = {
     // look up recipe
     const foundRecipe = await Recipe.getFullRecipe(id);
     if (!foundRecipe) {
-      res.status(404).send(`Recipe for ID ${id} not found.`);
+      const returnError = sails.helpers.error(null, `Recipe for ID ${id} not found.`);
+      return res.status(404).send(returnError);
     } else {
       return res.send(foundRecipe);
     }
@@ -62,7 +63,8 @@ module.exports = {
     const foundRecipe = await Recipe.findOne({id});
     console.log(foundRecipe);
     if (!foundRecipe) {
-      res.status(404).send(`Recipe for ID ${id} not found.`);
+      const returnError = sails.helpers.error(null, `Recipe for ID ${id} not found.`);
+      res.status(404).send(returnError);
     } else {
       const updatedRecipeData = {
         name: req.body.name,
@@ -127,7 +129,8 @@ module.exports = {
     // look up recipe
     const foundRecipe = await Recipe.findOne({id});
     if (!foundRecipe) {
-      res.status(404).send(`Recipe for ID ${id} not found.`);
+      const returnError = sails.helpers.error(null, `Recipe for ID ${id} not found.`);
+      res.status(404).send(returnError);
     } else {
       try {
         await Recipe.deleteRecipe(id);

@@ -1,5 +1,8 @@
+const randomId = require('random-id');
+const emailValidator = require('email-validator');
+
 checkForCharacters = (field) => {
-  return field.trim().length === 0;
+  return field.trim().length !== 0;
 };
 
 module.exports = {
@@ -7,33 +10,31 @@ module.exports = {
     id: {
       columnName: 'user_id',
       type: 'Number',
+      autoIncrement: true,
       unique: true,
-      // todo: how to generate rando unique user ID?
     },
     name: {
       type: 'String',
       unique: false,
       required: true,
-      // disallow strings only of spaces to maintain UI access to recipe
-      // todo: abstracted correctly?
-      custom: checkForCharacters(name)
+      // disallow strings only of spaces
+      custom: checkForCharacters
     },
     email: {
-      // todo: type string appropriate?
       type: 'String',
       unique: true,
       required: true,
-      // disallow strings only of spaces to maintain UI access to recipe
-      custom: checkForCharacters(email)
+      // disallow strings only of spaces
+      custom: emailValidator.validate
     },
     password: {
       type: 'String',
       required: true,
-      // pw from yoga server will never be blank - no need to check?
-      custom: checkForCharacters(password)
+      // disallow strings only of spaces
+      custom: checkForCharacters
     },
-    permissions: {
-      type: 'Array',
+    superuser: {
+      type: 'Boolean',
       required: true
     },
     // resetToken: {
@@ -43,9 +44,15 @@ module.exports = {
     //   type: 'String',
     // },
   },
-  async getUser(userId, email) {
+  beforeCreate(valuesToSet, proceed) {
+    // generating rando numerical user_ids to work around sails crap
+    const id = randomId(6, '0');
+    valuesToSet.id = id;
+    proceed();
+  },
+  async getUser({userId, email}) {
     if (userId) {
-    return await User.findOne({id: userId});
+      return await User.findOne({id: userId});
     }
     return await User.findOne({email});
   },

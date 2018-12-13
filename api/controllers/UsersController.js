@@ -4,39 +4,41 @@
  * @description :: Server-side actions for handling incoming user requests.
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
-const idParamValidator = {'id': 'numeric'};
 
 module.exports = {
   async getUsers(req, res) {
     const users = await User.getUsers({});
     return res.send(users);
   },
-  //todo: this gets a user by ID.  will we need a means of getting a user by email for login?
+
   async getUser(req, res) {
-    // validation
-    const paramsValidated = req.validate(
-      // if the validation fails, "req.badRequest" will be called
-      idParamValidator
-    );
-    if (!paramsValidated) {
-      return;
-    }
-    // convert ID from URL to number
-    const id = +paramsValidated.id;
-    // look up recipe
-    const foundUser = await Recipe.getUser(id);
+    const id = +req.params.id;
+    const foundUser = await User.getUser({userId: id});
     if (!foundUser) {
-      res.status(404).send(`User for ID ${id} not found.`);
+      const returnError = sails.helpers.error(null, `User for ID ${id} not found.`);
+      res.status(404).send(returnError);
     } else {
       return res.send(foundUser);
     }
   },
+
+  async getUserByEmail(req, res) {
+    const {email} = req.query;
+    const foundUser = await User.getUser({email});
+    if (!foundUser) {
+      const returnError = sails.helpers.error(null, `User with email ${email} not found.`);
+      res.status(404).send(returnError);
+    } else {
+      return res.send(foundUser);
+    }
+  },
+
   async createNewUser(req, res) {
     const newUser = {
       name: req.body.name,
       email: req.body.email,
       password: req.body.password,
-      permissions: req.body.permissions,
+      superuser: req.body.superuser,
       // resetToken: '',
       // resetTokenExpiry: ''
     };
