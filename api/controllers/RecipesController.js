@@ -9,7 +9,6 @@ const fs = require('fs');
 const path = require('path');
 const request = require('request-promise');
 const cheerio = require('cheerio');
-const idParamValidator = {'id': 'numeric'};
 const WebRecipeImporterFactory = require('../classes/WebRecipeImporterFactory.js');
 const requestOptions = {
   transform(body) {
@@ -30,15 +29,7 @@ module.exports = {
   },
   async getRecipe(req, res) {
     // validation
-    const paramsValidated = req.validate(
-      // if the validation fails, "req.badRequest" will be called
-      idParamValidator
-    );
-    if (!paramsValidated) {
-      return;
-    }
-    // convert ID from URL to number
-    const id = +paramsValidated.id;
+    const id = sails.helpers.idValidator(req);
     // look up recipe
     const foundRecipe = await Recipe.getFullRecipe(id);
     if (!foundRecipe) {
@@ -50,15 +41,7 @@ module.exports = {
   },
   async updateRecipe(req, res) {
     // validation
-    const paramsValidated = req.validate(
-      // if the validation fails, "req.badRequest" will be called
-      idParamValidator
-    );
-    if (!paramsValidated) {
-      return;
-    }
-    // convert ID from URL to number
-    const id = +paramsValidated.id;
+    const id = sails.helpers.idValidator(req);
     // look up recipe
     const foundRecipe = await Recipe.findOne({id});
     console.log(foundRecipe);
@@ -117,15 +100,7 @@ module.exports = {
   },
   async deleteRecipe(req, res) {
     // validation
-    const paramsValidated = req.validate(
-      // if the validation fails, "req.badRequest" will be called
-      idParamValidator
-    );
-    if (!paramsValidated) {
-      return;
-    }
-    // convert ID from URL to number
-    const id = +paramsValidated.id;
+    const id = sails.helpers.idValidator(req);
     // look up recipe
     const foundRecipe = await Recipe.findOne({id});
     if (!foundRecipe) {

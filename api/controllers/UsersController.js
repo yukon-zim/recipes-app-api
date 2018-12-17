@@ -12,7 +12,9 @@ module.exports = {
   },
 
   async getUser(req, res) {
-    const id = +req.params.id;
+    // validation
+    const id = sails.helpers.idValidator(req);
+    // look up user
     const foundUser = await User.getUser({userId: id});
     if (!foundUser) {
       const returnError = sails.helpers.error(null, `User for ID ${id} not found.`);
