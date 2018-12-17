@@ -57,7 +57,6 @@ module.exports = {
         numberOfServings: req.body.numberOfServings,
         notes: req.body.notes
       };
-      console.log(updatedRecipeData);
       try {
         const updatedRecipe = await Recipe.updateRecipe(updatedRecipeData, id);
         return res.send(updatedRecipe);

@@ -35,21 +35,58 @@ module.exports = {
     }
   },
 
+  async getUserByResetToken(req, res) {
+    const {resetToken} = req.params;
+    const foundUser = await User.getUser({resetToken});
+    if (!foundUser) {
+      const returnError = sails.helpers.error(null, `User with this reset token not found.`);
+      res.status(404).send(returnError);
+    } else {
+      if (foundUser.resetTokenExpiry >= Date.now()) {
+        return res.send(foundUser);
+      }
+      const expiredError = sails.helpers.error(null, `This PW reset request has expired.`);
+      res.status(404).send(returexpiredErrornError);
+    }
+  },
+
   async createNewUser(req, res) {
     const newUser = {
       name: req.body.name,
       email: req.body.email,
       password: req.body.password,
       superuser: req.body.superuser,
-      // resetToken: '',
-      // resetTokenExpiry: ''
+      resetToken: '',
+      resetTokenExpiry: ''
     };
     try {
       const savedNewUser = await User.createNewUser(newUser);
       return res.send(savedNewUser);
-    } catch(err) {
+    } catch (err) {
       const returnError = sails.helpers.error(err);
       return res.status(400).send(returnError);
+    }
+  },
+
+  async updateUser(req, res) {
+    const {id} = req.params;
+    const foundUser = await User.getUser({userId: id});
+    if (!foundUser) {
+      const returnError = sails.helpers.error(null, `User with id ${id} not found.`);
+      res.status(404).send(returnError);
+    } else {
+      const updatedUserData = {
+        password: req.body.password,
+        resetToken: req.body.resetToken,
+        resetTokenExpiry: req.body.resetTokenExpiry
+      };
+      try {
+        const updatedUser = await User.updateUser(updatedUserData, id);
+        return res.send(updatedUser);
+      } catch(err) {
+        const returnError = sails.helpers.error(err);
+        return res.status(400).send(returnError);
+      }
     }
   }
 };

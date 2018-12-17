@@ -55,7 +55,9 @@ module.exports.routes = {
   // route /email/email is needed in order to pass email query param correctly
   'get /users/email/email' : 'UsersController.getUserByEmail',
   'get /users/:id' : 'UsersController.getUser',
-  'post /users' : 'UsersController.createNewUser'
+  'get /users/reset/:resetToken' : 'UsersController.getUserByResetToken',
+  'post /users' : 'UsersController.createNewUser',
+  'put /users/:id' : 'UsersController.updateUser',
 
 
   //  ╦ ╦╔═╗╔╗ ╦ ╦╔═╗╔═╗╦╔═╔═╗

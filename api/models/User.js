@@ -37,12 +37,12 @@ module.exports = {
       type: 'Boolean',
       required: true
     },
-    // resetToken: {
-    //   type: 'String'
-    // },
-    // resetTokenExpiry: {
-    //   type: 'String',
-    // },
+    resetToken: {
+      type: 'String'
+    },
+    resetTokenExpiry: {
+      type: 'String',
+    },
   },
   beforeCreate(valuesToSet, proceed) {
     // generating rando numerical user_ids to work around sails crap
@@ -50,11 +50,22 @@ module.exports = {
     valuesToSet.id = id;
     proceed();
   },
-  async getUser({userId, email}) {
+  async getUser({userId, email, resetToken}) {
+    if (!userId && !email && !resetToken) {
+      throw new Error('no user params provided');
+    }
     if (userId) {
       return await User.findOne({id: userId});
+    } else if (email) {
+      return await User.findOne({email});
     }
-    return await User.findOne({email});
+    const userByToken = await User.find({resetToken});
+    if (userByToken.length > 1) {
+      throw new Error('More than one user found for this reset token');
+    } else if (userByToken.length === 0) {
+      return null;
+    }
+    return userByToken[0];
   },
   async getUsers(criteriaObj) {
     return await User.find(criteriaObj);
@@ -62,5 +73,8 @@ module.exports = {
   async createNewUser(userData) {
     return await User.create(userData).fetch();
   },
-
+  async updateUser(userData, id) {
+    await User.update({id}).set(userData);
+    return await User.findOne({id});
+  }
 };
