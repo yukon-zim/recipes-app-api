@@ -46,7 +46,7 @@ module.exports = {
         return res.send(foundUser);
       }
       const expiredError = sails.helpers.error(null, `This PW reset request has expired.`);
-      res.status(404).send(returexpiredErrornError);
+      res.status(404).send(expiredError);
     }
   },
 

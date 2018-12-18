@@ -44,7 +44,6 @@ module.exports = {
     const id = sails.helpers.idValidator(req);
     // look up recipe
     const foundRecipe = await Recipe.findOne({id});
-    console.log(foundRecipe);
     if (!foundRecipe) {
       const returnError = sails.helpers.error(null, `Recipe for ID ${id} not found.`);
       res.status(404).send(returnError);
@@ -144,7 +143,7 @@ module.exports = {
         .on('data', data => {
           function sendResponseIfLastRecord(res) {
             if ((savedRecipeCount + erroredRecipeCount) === totalRecipeCount) {
-              res.send({message: `imported ${savedRecipeCount} recipes,\\n encountered ${erroredRecipeCount} errors`});
+              res.send({message: `imported ${savedRecipeCount} recipes, encountered ${erroredRecipeCount} errors`});
             }
           }
           try {
