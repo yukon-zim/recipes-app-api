@@ -85,6 +85,11 @@ module.exports = {
   async addRecipeFromUrl(req, res) {
     let newRecipe = {};
     requestOptions.uri = req.body.url;
+    if (!requestOptions.uri) {
+      const returnError = sails.helpers.error(null, `Import URI required`);
+      res.status(404).send(returnError);
+      return;
+    }
     const selector = await request(requestOptions);
     const webRecipeImporter = WebRecipeImporterFactory.getWebRecipeImporter(requestOptions.uri, selector);
     try {

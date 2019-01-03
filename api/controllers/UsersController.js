@@ -26,6 +26,11 @@ module.exports = {
 
   async getUserByEmail(req, res) {
     const {email} = req.query;
+    if (!email) {
+      const returnError = sails.helpers.error(null, `Email required`);
+      res.status(404).send(returnError);
+      return;
+    }
     const foundUser = await User.getUser({email});
     if (!foundUser) {
       const returnError = sails.helpers.error(null, `User with email ${email} not found.`);
@@ -37,6 +42,11 @@ module.exports = {
 
   async getUserByResetToken(req, res) {
     const {resetToken} = req.params;
+    if (!resetToken) {
+      const returnError = sails.helpers.error(null, `Reset token required`);
+      res.status(404).send(returnError);
+      return;
+    }
     const foundUser = await User.getUser({resetToken});
     if (!foundUser) {
       const returnError = sails.helpers.error(null, `User with this reset token not found.`);

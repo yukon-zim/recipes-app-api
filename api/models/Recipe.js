@@ -96,7 +96,6 @@ module.exports = {
       'OR ingredient.ingredient_name LIKE $1 ' +
       'OR instruction.instruction_name LIKE $1; ',
       [wildCardSearch]);
-    console.log(searchResults);
     const recipeIds = searchResults.rows.map(row => {
       return row.recipe_id;
     });
