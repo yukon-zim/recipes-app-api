@@ -64,18 +64,9 @@ module.exports = {
     if (!foundRecipe) {
       res.status(404).send(`Recipe for ID ${id} not found.`);
     } else {
-      console.log(foundRecipe);
-      foundRecipe.name = req.body.name;
-      foundRecipe.category = req.body.category;
-      foundRecipe.ingredients = req.body.ingredients;
-      foundRecipe.numberOfServings = req.body.numberOfServings;
-      foundRecipe.instructions = req.body.instructions;
-      foundRecipe.dateModified = new Date();
-      foundRecipe.notes = req.body.notes;
       try {
-        await foundRecipe.save();
-        // const updatedRecipe = await foundRecipe.updateRecipe(id, req.body);
-        return res.send(foundRecipe);
+        const updatedRecipe = await foundRecipe.updateRecipe(id, req.body);
+        return res.send(updatedRecipe);
       } catch(err) {
         const returnError = sails.helpers.error(err);
         return res.status(400).send(returnError);

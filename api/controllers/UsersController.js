@@ -31,7 +31,6 @@ module.exports = {
       res.status(404).send(returnError);
       return;
     }
-    console.log(email);
     const foundUser = await User.getUser({email});
     if (!foundUser) {
       const returnError = sails.helpers.error(null, `User with email ${email} not found.`);
@@ -62,7 +61,6 @@ module.exports = {
   },
 
   async createNewUser(req, res) {
-    console.log('reached');
     const newUser = {
       name: req.body.name,
       email: req.body.email,
@@ -72,9 +70,7 @@ module.exports = {
       resetTokenExpiry: ''
     };
     try {
-      // console.log(newUser);
       const savedNewUser = await User.createNewUser(newUser);
-      // console.log(savedNewUser);
       return res.send(savedNewUser);
     } catch (err) {
       const returnError = sails.helpers.error(err);

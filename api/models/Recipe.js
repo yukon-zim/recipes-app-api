@@ -24,14 +24,13 @@ module.exports = {
       return await Recipe.findOne({id: recipeId});
     });
     newSchema.methods.updateRecipe = async function(id, body) {
-      this._doc.attributes.name = body.name;
-      this._doc.attributes.category = body.category;
-      this._doc.attributes.ingredients = body.ingredients;
-      this._doc.attributes.numberOfServings = body.numberOfServings;
-      this._doc.attributes.instructions = body.instructions;
-      this._doc.attributes.dateModified = new Date();
-      this._doc.attributes.notes = body.notes;
-      this._doc.attributes.id = id;
+      this.name = body.name;
+      this.category = body.category;
+      this.ingredients = body.ingredients;
+      this.numberOfServings = body.numberOfServings;
+      this.instructions = body.instructions;
+      this.dateModified = new Date();
+      this.notes = body.notes;
       try {
         await this.save();
         return await Recipe.getFullRecipe(id);
@@ -42,55 +41,53 @@ module.exports = {
     return newSchema;
   },
   schema: {
-    attributes: {
-      id: {
-        type: Number,
-        unique: true,
-        required: true
-      },
-      name: {
-        type: String,
-        unique: true,
-        required: true,
-        // disallow strings only of spaces to maintain UI access to recipe
-        custom: function (name) {
-          if (name.trim().length === 0) {
-            return false;
-          }
-          return true;
+    id: {
+      type: Number,
+      unique: true,
+      required: true
+    },
+    name: {
+      type: String,
+      unique: true,
+      required: true,
+      // disallow strings only of spaces to maintain UI access to recipe
+      custom: function (name) {
+        if (name.trim().length === 0) {
+          return false;
         }
-      },
-      category: {
-        type: String,
-        default: ''
-      },
-      ingredients: {
-        type: [String],
-        required: true
-      },
-      numberOfServings: {
-        type: String,
-        default: ''
-      },
-      instructions: {
-        type: [String],
-        required: true
-      },
-      dateCreated: {
-        type: Date,
-        required: true,
-        default: new Date()
-      },
-      dateModified: {
-        type: Date,
-        required: true,
-        default: new Date()
-      },
-      notes: {
-        type: String,
-        default:''
-      },
-    }
+        return true;
+      }
+    },
+    category: {
+      type: String,
+      default: ''
+    },
+    ingredients: {
+      type: [String],
+      required: true
+    },
+    numberOfServings: {
+      type: String,
+      default: ''
+    },
+    instructions: {
+      type: [String],
+      required: true
+    },
+    dateCreated: {
+      type: Date,
+      required: true,
+      default: new Date()
+    },
+    dateModified: {
+      type: Date,
+      required: true,
+      default: new Date()
+    },
+    notes: {
+      type: String,
+      default:''
+    },
   },
   cascadeOnDestroy: true,
   customToJSON() {
@@ -159,30 +156,30 @@ module.exports = {
     await Instruction.createEach(dbInstructions);
     return await Recipe.getFullRecipe(newRecipe.id);
   },
-  async updateRecipe(recipeData, recipeId) {
-    const flatRecipeData = lodash.omit(recipeData, ['ingredients', 'instructions']);
-    await Ingredient.destroy({recipeId});
-    await Instruction.destroy({recipeId});
-    const dbIngredients = recipeData.ingredients.map((ingredient, index) => {
-      return {
-        name: ingredient,
-        ingredientIndex: index,
-        recipeId: recipeId
-      };
-    });
-    await Ingredient.createEach(dbIngredients);
-    const dbInstructions = recipeData.instructions.map((instruction, index) => {
-      return {
-        name: instruction,
-        instructionIndex: index,
-        recipeId: recipeId
-      };
-    });
-    await Instruction.createEach(dbInstructions);
-    await Recipe.update({id: recipeId})
-      .set(flatRecipeData);
-    return await Recipe.getFullRecipe(recipeId);
-  },
+  // async updateRecipe(recipeData, recipeId) {
+  //   const flatRecipeData = lodash.omit(recipeData, ['ingredients', 'instructions']);
+  //   await Ingredient.destroy({recipeId});
+  //   await Instruction.destroy({recipeId});
+  //   const dbIngredients = recipeData.ingredients.map((ingredient, index) => {
+  //     return {
+  //       name: ingredient,
+  //       ingredientIndex: index,
+  //       recipeId: recipeId
+  //     };
+  //   });
+  //   await Ingredient.createEach(dbIngredients);
+  //   const dbInstructions = recipeData.instructions.map((instruction, index) => {
+  //     return {
+  //       name: instruction,
+  //       instructionIndex: index,
+  //       recipeId: recipeId
+  //     };
+  //   });
+  //   await Instruction.createEach(dbInstructions);
+  //   await Recipe.update({id: recipeId})
+  //     .set(flatRecipeData);
+  //   return await Recipe.getFullRecipe(recipeId);
+  // },
   async deleteRecipe(recipeId) {
     await Ingredient.destroy({recipeId});
     await Instruction.destroy({recipeId});
