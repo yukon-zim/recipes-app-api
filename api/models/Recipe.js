@@ -1,59 +1,96 @@
 const lodash = require('lodash');
+const mongooseAutoIncrement = require('mongoose-auto-increment');
 
 module.exports = {
-  attributes: {
-    id: {
-      columnName: 'recipe_id',
-      type: 'Number',
-      unique: true,
-      autoIncrement: true
-    },
-    name: {
-      type: 'String',
-      unique: true,
-      required: true,
-      // disallow strings only of spaces to maintain UI access to recipe
-      custom: function(name) {
-        if (name.trim().length === 0) {
-          return false;
-        }
-        return true;
+  constructSchema(schemaDefinition, sails) {
+    sails.mongoose.set('debug', true);
+    mongooseAutoIncrement.initialize(sails.mongoose.connection);
+    const newSchema = sails.mongoose.Schema(schemaDefinition);
+    newSchema.index({
+      name: 'text',
+      category: 'text',
+      ingredients: 'text',
+      notes: 'text'
+    }, {
+      weights: {
+        name: 10,
+        category: 4,
+        ingredients: 8,
+        notes: 2
       }
-    },
-    category: {
-      type: 'String',
-      defaultsTo: ''
-    },
-    ingredients: {
-      collection: 'ingredient',
-      via: 'recipeId'
-    },
-    numberOfServings: {
-      columnName: 'number_of_servings',
-      type: 'String',
-      defaultsTo: ''
-    },
-    instructions: {
-      collection: 'instruction',
-      via: 'recipeId'
-    },
-    dateCreated: {
-      columnName: 'date_created',
-      type: 'ref',
-      columnType: 'Date',
-      defaultsTo: new Date()
-    },
-    dateModified: {
-      columnName: 'date_modified',
-      type: 'ref',
-      columnType: 'Date',
-      defaultsTo: new Date()
-    },
-    notes: {
-      type: 'String',
-      columnType: 'varchar(1100)',
-      defaultsTo: ''
-    },
+    });
+    newSchema.plugin(mongooseAutoIncrement.plugin, {model: 'Recipe', field: 'id'});
+    newSchema.static('getFullRecipe', async (recipeId) => {
+      return await Recipe.findOne({id: recipeId});
+    });
+    newSchema.methods.updateRecipe = async function(id, body) {
+      this._doc.attributes.name = body.name;
+      this._doc.attributes.category = body.category;
+      this._doc.attributes.ingredients = body.ingredients;
+      this._doc.attributes.numberOfServings = body.numberOfServings;
+      this._doc.attributes.instructions = body.instructions;
+      this._doc.attributes.dateModified = new Date();
+      this._doc.attributes.notes = body.notes;
+      this._doc.attributes.id = id;
+      try {
+        await this.save();
+        return await Recipe.getFullRecipe(id);
+      } catch (err) {
+        return sails.helpers.error(err);
+      }
+    };
+    return newSchema;
+  },
+  schema: {
+    attributes: {
+      id: {
+        type: Number,
+        unique: true,
+        required: true
+      },
+      name: {
+        type: String,
+        unique: true,
+        required: true,
+        // disallow strings only of spaces to maintain UI access to recipe
+        custom: function (name) {
+          if (name.trim().length === 0) {
+            return false;
+          }
+          return true;
+        }
+      },
+      category: {
+        type: String,
+        default: ''
+      },
+      ingredients: {
+        type: [String],
+        required: true
+      },
+      numberOfServings: {
+        type: String,
+        default: ''
+      },
+      instructions: {
+        type: [String],
+        required: true
+      },
+      dateCreated: {
+        type: Date,
+        required: true,
+        default: new Date()
+      },
+      dateModified: {
+        type: Date,
+        required: true,
+        default: new Date()
+      },
+      notes: {
+        type: String,
+        default:''
+      },
+    }
   },
   cascadeOnDestroy: true,
   customToJSON() {

@@ -60,21 +60,22 @@ module.exports = {
     // convert ID from URL to number
     const id = +paramsValidated.id;
     // look up recipe
-    const foundRecipe = await Recipe.findOne({id});
+    const foundRecipe = await Recipe.getFullRecipe(id);
     if (!foundRecipe) {
       res.status(404).send(`Recipe for ID ${id} not found.`);
     } else {
+      console.log(foundRecipe);
       foundRecipe.name = req.body.name;
       foundRecipe.category = req.body.category;
-      await Recipe.replaceCollection(id, 'ingredients', req.body.ingredients);
+      foundRecipe.ingredients = req.body.ingredients;
       foundRecipe.numberOfServings = req.body.numberOfServings;
-      await Recipe.replaceCollection(id, 'instructions', req.body.instructions);
+      foundRecipe.instructions = req.body.instructions;
       foundRecipe.dateModified = new Date();
       foundRecipe.notes = req.body.notes;
       try {
-        await foundRecipe.update();
-        const updatedRecipe = await Recipe.getFullRecipe(id);
-        return res.send(updatedRecipe);
+        await foundRecipe.save();
+        // const updatedRecipe = await foundRecipe.updateRecipe(id, req.body);
+        return res.send(foundRecipe);
       } catch(err) {
         const returnError = sails.helpers.error(err);
         return res.status(400).send(returnError);
@@ -82,14 +83,13 @@ module.exports = {
     }
   },
   async addRecipe(req, res) {
-    const newRecipe = {
-      name: req.body.name,
-      category: req.body.category,
-      numberOfServings: req.body.numberOfServings,
-      ingredients: req.body.ingredients,
-      instructions: req.body.instructions,
-      notes: req.body.notes
-    };
+    const newRecipe = new Recipe();
+    newRecipe.name =  req.body.name;
+    newRecipe.category =  req.body.category;
+    newRecipe.numberOfServings =  req.body.numberOfServings;
+    newRecipe.ingredients =  req.body.ingredients;
+    newRecipe.instructions =  req.body.instructions;
+    newRecipe.notes =  req.body.notes;
     try {
       const savedRecipe = await Recipe.createNewRecipe(newRecipe);
       return res.send(savedRecipe);
@@ -129,7 +129,7 @@ module.exports = {
       res.status(404).send(`Recipe for ID ${id} not found.`);
     } else {
       try {
-        await Recipe.destroy({id}).meta({cascade: true});
+        await foundRecipe.remove();
         return res.send({message: `Successfully removed recipe for ID ${id}`});
       } catch(err) {
         const returnError = sails.helpers.error(err);

@@ -48,8 +48,8 @@ module.exports.datastores = {
     *    (See https://sailsjs.com/config/datastores for help.)                 *
     *                                                                          *
     ***************************************************************************/
-    adapter: 'sails-mysql',
-    url: 'mysql://yukonsolns-mac:yukonsolns-mac@localhost:3306/recipes_app',
+    // adapter: 'sails-mysql',
+    // url: 'mysql://yukonsolns-mac:yukonsolns-mac@localhost:3306/recipes_app',
 
   },
 
