@@ -38,6 +38,14 @@ module.exports = {
         return sails.helpers.error(err);
       }
     };
+    newSchema.static('createNewRecipe', async function(recipe) {
+      try {
+        return await recipe.save();
+      } catch(err) {
+        const returnError = sails.helpers.error(err);
+        return res.status(400).send(returnError);
+      }
+    });
     return newSchema;
   },
   schema: {
@@ -135,27 +143,27 @@ module.exports = {
     });
     return await Recipe.getFullRecipes({id: {in: recipeIds}});
   },
-  async createNewRecipe(recipeData) {
-    const flatRecipeData = lodash.omit(recipeData, ['ingredients', 'instructions']);
-    const newRecipe = await Recipe.create(flatRecipeData).fetch();
-    const dbIngredients = recipeData.ingredients.map((ingredient, index) => {
-      return {
-        name: ingredient,
-        ingredientIndex: index,
-        recipeId: newRecipe.id
-      };
-    });
-    await Ingredient.createEach(dbIngredients);
-    const dbInstructions = recipeData.instructions.map((instruction, index) => {
-      return {
-        name: instruction,
-        instructionIndex: index,
-        recipeId: newRecipe.id
-      };
-    });
-    await Instruction.createEach(dbInstructions);
-    return await Recipe.getFullRecipe(newRecipe.id);
-  },
+  // async createNewRecipe(recipeData) {
+  //   const flatRecipeData = lodash.omit(recipeData, ['ingredients', 'instructions']);
+  //   const newRecipe = await Recipe.create(flatRecipeData).fetch();
+  //   const dbIngredients = recipeData.ingredients.map((ingredient, index) => {
+  //     return {
+  //       name: ingredient,
+  //       ingredientIndex: index,
+  //       recipeId: newRecipe.id
+  //     };
+  //   });
+  //   await Ingredient.createEach(dbIngredients);
+  //   const dbInstructions = recipeData.instructions.map((instruction, index) => {
+  //     return {
+  //       name: instruction,
+  //       instructionIndex: index,
+  //       recipeId: newRecipe.id
+  //     };
+  //   });
+  //   await Instruction.createEach(dbInstructions);
+  //   return await Recipe.getFullRecipe(newRecipe.id);
+  // },
   // async updateRecipe(recipeData, recipeId) {
   //   const flatRecipeData = lodash.omit(recipeData, ['ingredients', 'instructions']);
   //   await Ingredient.destroy({recipeId});
