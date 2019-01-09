@@ -95,6 +95,7 @@ module.exports = {
     },
   },
   cascadeOnDestroy: true,
+  //todo: remove sql methods when appropriate
   // customToJSON() {
   //   const newRecipe = lodash.omit(this, ['ingredients', 'instructions']);
   //   const ingredientNames = this.ingredients.map(ingredient => {
