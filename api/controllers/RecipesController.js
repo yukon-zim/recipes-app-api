@@ -23,7 +23,7 @@ module.exports = {
     const searchTerm = req.query.searchTerm;
     const searchProjection = {score:{$meta:'textScore'}};
     if (searchTerm) {
-      recipes = await Recipe.find({$text:{$search:searchTerm}}, searchProjection).sort(searchProjection);
+      recipes = await Recipe.searchRecipes(searchTerm, searchProjection);
     } else {
       recipes = await Recipe.find({});
     }
@@ -96,8 +96,10 @@ module.exports = {
     const webRecipeImporter = WebRecipeImporterFactory.getWebRecipeImporter(requestOptions.uri, selector);
     try {
       newRecipe = webRecipeImporter.buildNewRecipe(newRecipe, requestOptions.uri);
-      await newRecipe.save();
-      return res.send(newRecipe);
+      const savedRecipe = await Recipe.createNewRecipe(newRecipe);
+      return res.send(savedRecipe);
+      // await newRecipe.save();
+      // return res.send(newRecipe);
     } catch(err) {
       const returnError = sails.helpers.error(err);
       return res.status(400).send(returnError.message);
@@ -115,12 +117,12 @@ module.exports = {
     // convert ID from URL to number
     const id = +paramsValidated.id;
     // look up recipe
-    const foundRecipe = await Recipe.findOne({id});
+    const foundRecipe = await Recipe.getFullRecipe(id);
     if (!foundRecipe) {
       res.status(404).send(`Recipe for ID ${id} not found.`);
     } else {
       try {
-        await foundRecipe.remove();
+        await foundRecipe.deleteRecipe();
         return res.send({message: `Successfully removed recipe for ID ${id}`});
       } catch(err) {
         const returnError = sails.helpers.error(err);
