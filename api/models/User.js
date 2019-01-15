@@ -35,12 +35,7 @@ module.exports = {
       newUser.superuser = userData.superuser;
       newUser.resetToken = userData.resetToken;
       newUser.resetTokenExpiry = userData.resetTokenExpiry;
-      try {
-        return await newUser.save();
-      } catch(err) {
-        const returnError = sails.helpers.error(err);
-        return res.status(400).send(returnError);
-      }
+      return await newUser.save();
     });
     newSchema.methods.updateUser = async function(updatedUserData, id) {
       this.password = updatedUserData.password;

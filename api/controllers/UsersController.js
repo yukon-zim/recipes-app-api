@@ -81,6 +81,7 @@ module.exports = {
       res.status(404).send(returnError);
     } else {
       const updatedUserData = {
+        // function not always used to update pw
         password: req.body.password || foundUser.password,
         resetToken: req.body.resetToken,
         resetTokenExpiry: req.body.resetTokenExpiry
