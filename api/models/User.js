@@ -28,13 +28,13 @@ module.exports = {
     newSchema.static('createNewUser', async userData => {
       const id = +randomId(6, '0');
       const newUser = new User();
+      newUser.id = id;
       newUser.name = userData.name;
       newUser.email = userData.email;
       newUser.password = userData.password;
       newUser.superuser = userData.superuser;
       newUser.resetToken = userData.resetToken;
       newUser.resetTokenExpiry = userData.resetTokenExpiry;
-      newUser.id = id;
       try {
         return await newUser.save();
       } catch(err) {
@@ -42,6 +42,13 @@ module.exports = {
         return res.status(400).send(returnError);
       }
     });
+    newSchema.methods.updateUser = async function(updatedUserData, id) {
+      this.password = updatedUserData.password;
+      this.resetToken = updatedUserData.resetToken;
+      this.resetTokenExpiry = updatedUserData.resetTokenExpiry;
+      await this.save();
+      return await User.findOne({id});
+    };
     return newSchema;
   },
   schema: {
@@ -80,11 +87,4 @@ module.exports = {
       type: String
     },
   },
-  async getUsers(criteriaObj) {
-    return await User.find(criteriaObj);
-  },
-  async updateUser(userData, id) {
-    await User.update({id}).set(userData);
-    return await User.findOne({id});
-  }
 };

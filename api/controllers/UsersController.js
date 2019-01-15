@@ -6,11 +6,6 @@
  */
 
 module.exports = {
-  async getUsers(req, res) {
-    const users = await User.getUsers({});
-    return res.send(users);
-  },
-
   async getUser(req, res) {
     // validation
     const id = sails.helpers.idValidator(req);
@@ -86,12 +81,12 @@ module.exports = {
       res.status(404).send(returnError);
     } else {
       const updatedUserData = {
-        password: req.body.password,
+        password: req.body.password || foundUser.password,
         resetToken: req.body.resetToken,
         resetTokenExpiry: req.body.resetTokenExpiry
       };
       try {
-        const updatedUser = await User.updateUser(updatedUserData, id);
+        const updatedUser = await foundUser.updateUser(updatedUserData, id);
         return res.send(updatedUser);
       } catch(err) {
         const returnError = sails.helpers.error(err);
