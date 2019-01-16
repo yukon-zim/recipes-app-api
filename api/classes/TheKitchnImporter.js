@@ -13,18 +13,18 @@ module.exports = {
       this.category = '';
     }
     setServingsProperty() {
-      const selectorString = '.PostRecipe__yield';
-      this.numberOfServings = this.selector(selectorString).first().text();
+      const selectorString = '[itemprop=recipeYield]';
+      this.numberOfServings = this.selector(selectorString).first().text().split('\n').join('').trim();
     }
     setIngredientsProperty() {
-      const selectorString = '.PostRecipeIngredientGroup__ingredients';
+      const selectorString = '.Recipe__ingredients';
       this.ingredients = this.selector(selectorString).children()
         .map((index, elem) => {
           return this.selector(elem).text().split('\n').join('').trim();
         }).get();
     }
     setInstructionsProperty() {
-      const selectorString = '.PostRecipeInstructionGroup';
+      const selectorString = '.Recipe__instructions';
       this.instructions = this.selector(selectorString).map((index, elem) => {
         return this.selector(elem).children().map((innerIndex, innerElem) => {
           return this.selector(innerElem).text().split('\n').join('').trim();

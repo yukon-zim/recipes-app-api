@@ -51,7 +51,6 @@ module.exports.routes = {
   'post /recipes/import' : 'RecipesController.importRecipe',
   'post /recipes/import-url' : 'RecipesController.addRecipeFromUrl',
   'delete /recipes/:id' : 'RecipesController.deleteRecipe',
-  'get /users' : 'UsersController.getUsers',
   // route /email/email is needed in order to pass email query param correctly
   'get /users/email/email' : 'UsersController.getUserByEmail',
   'get /users/:id' : 'UsersController.getUser',

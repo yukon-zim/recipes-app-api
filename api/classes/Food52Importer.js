@@ -5,7 +5,6 @@ module.exports = {
     constructor(selector) {
       super(selector);
       this.recipeText = JSON.parse(this.selector('script[type="application/ld+json"]').html());
-      console.log(this.recipeText);
     }
     setNameProperty() {
       this.name = this.recipeText.name;

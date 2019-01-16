@@ -20,7 +20,7 @@ module.exports = {
       this.numberOfServings = this.selector(selectorString).attr('content');
     }
     setIngredientsProperty() {
-      const selectorString = '[itemprop=ingredients]';
+      const selectorString = '[itemprop=recipeIngredient]';
       this.ingredients = this.selector(selectorString).map((index, elem) => {
         return this.selector(elem).text();
       }).get();
