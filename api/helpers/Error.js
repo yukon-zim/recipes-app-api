@@ -38,7 +38,7 @@ module.exports = {
     }
     // make sure message is populated on the returnError
     if (!returnError.message) {
-      if (inputs.err.message) {
+      if (inputs.err && inputs.err.message) {
         // even though we copied all fields from inputs.err previously, that does not work for Error objects
         // you need to specify inputs.err.message on its own.
         // Reason: the field "message" is retrieved via a get method.  These kinds of fields are not copied over
