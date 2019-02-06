@@ -1,0 +1,11 @@
+language: node_js
+node_js: 8.11.0
+deploy:
+  provider: script
+  skip_cleanup: true
+  script:
+    rsync -qazr --delete-after ./ bitnami@3.16.189.124:~/projects/recipes-app-api/;
+    ssh bitnami@3.16.189.124 "cd ~/projects/recipes-app-api && npm install";
+    ssh bitnami@3.16.189.124 "forever restart api"
+  on:
+    branch: master
