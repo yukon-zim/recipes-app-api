@@ -83,12 +83,12 @@ module.exports = {
     dateCreated: {
       type: Date,
       required: true,
-      default: new Date()
+      default: Date.now
     },
     dateModified: {
       type: Date,
       required: true,
-      default: new Date()
+      default: Date.now
     },
     notes: {
       type: String,
