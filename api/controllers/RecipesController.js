@@ -148,7 +148,7 @@ module.exports = {
       let savedRecipeCount = 0;
       let totalRecipeCount = 0;
       const transformStream = fastCsv()
-        .validate(data => {
+        .validate(() => {
           totalRecipeCount += 1;
           return true;
         })
@@ -170,7 +170,7 @@ module.exports = {
             }
           });
         })
-        .on('error', err => {
+        .on('error', () => {
           const returnError = sails.helpers.error(null, 'Encountered an error when importing recipes');
           return res.status(400).send(returnError);
         });

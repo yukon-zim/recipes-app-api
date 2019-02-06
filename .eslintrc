@@ -80,7 +80,7 @@
     "no-unused-vars":               ["warn", {"caughtErrors":"all", "caughtErrorsIgnorePattern": "^unused($|[A-Z].*$)"}],
     "no-use-before-define":         ["error", {"functions":false}],
     "one-var":                      ["warn", "never"],
-    "prefer-arrow-callback":        ["warn", {"allowNamedFunctions":true}],
+    "prefer-arrow-callback":        [0, {"allowNamedFunctions":true}],
     "quotes":                       ["warn", "single", {"avoidEscape":false, "allowTemplateLiterals":true}],
     "semi":                         ["error", "always"],
     "semi-spacing":                 ["warn", {"before":false, "after":true}],

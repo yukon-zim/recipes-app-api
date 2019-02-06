@@ -1,4 +1,3 @@
-const lodash = require('lodash');
 const mongooseAutoIncrement = require('mongoose-auto-increment');
 
 module.exports = {

@@ -19,7 +19,7 @@ module.exports = {
       instructions: ['instructions'],
       notes: 'notes'
     };
-    this.existingRecipes = [await Recipe.createNewRecipe(newRecipe), await Recipe.createNewRecipe(newRecipe2)]
+    this.existingRecipes = [await Recipe.createNewRecipe(newRecipe), await Recipe.createNewRecipe(newRecipe2)];
     this.existingRecipeIds = this.existingRecipes.map(recipe => {
       return recipe.id;
     });
